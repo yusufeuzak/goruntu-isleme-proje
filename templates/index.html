@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goruntu Isleme Projesi</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Goruntu Isleme Web Araci</h1>
+
+    <div id="dropzone" class="dropzone">
+      Gorseli surukleyip birakin veya dosya secin (yalnizca JPG/PNG)
+      <input id="fileInput" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
+      <p id="uploadMessage" class="message"></p>
+    </div>
+
+    <div class="row">
+      <div>
+        <h3>Yuklenen Gorsel</h3>
+        <img id="previewImage" alt="Yuklenen goruntu" />
+        <div class="image-actions">
+          <button id="removeImageBtn" type="button">Gorseli Kaldir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
