@@ -49,6 +49,16 @@ body {
   background: #fff;
 }
 
+.image-viewport {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.image-viewport.crop-mode {
+  cursor: crosshair;
+}
+
 .image-panel img {
   display: block;
   width: 100%;
@@ -58,6 +68,14 @@ body {
   border: 1px solid #ddd;
   background: #fafafa;
   border-radius: 6px;
+}
+
+.crop-selection {
+  position: absolute;
+  border: 2px dashed #ff7a00;
+  background: rgba(255, 122, 0, 0.15);
+  pointer-events: none;
+  display: none;
 }
 
 .image-actions {
@@ -123,6 +141,24 @@ canvas {
   background: #fafafa;
 }
 
+.crop-help {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  color: #666;
+}
+
+.crop-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .angle-label {
   font-size: 13px;
   color: #444;
@@ -148,4 +184,5 @@ canvas {
   .content-grid {
     grid-template-columns: 1fr;
   }
+
 }

@@ -19,7 +19,10 @@
     <div class="content-grid">
       <section class="card image-panel">
         <h3>Yuklenen Gorsel</h3>
-        <img id="previewImage" alt="Yuklenen goruntu" />
+        <div id="imageViewport" class="image-viewport">
+          <img id="previewImage" alt="Yuklenen goruntu" draggable="false" />
+          <div id="cropSelection" class="crop-selection"></div>
+        </div>
         <div class="image-actions">
           <button id="removeImageBtn" type="button">Gorseli Kaldir</button>
         </div>
@@ -35,6 +38,12 @@
           <input type="checkbox" class="op-checkbox" value="binary" />
           <span>Binary Donusum</span>
         </label>
+        <p class="angle-label">Goruntu Kirpma (Fare ile Secim)</p>
+        <p class="crop-help">Gorsel ustunde fare ile dikdortgen secip alttaki butona basin.</p>
+        <div class="crop-actions">
+          <button id="startCropBtn" type="button">Kirpmaya Basla</button>
+          <button id="applySelectionCropBtn" type="button" disabled>Secili Alani Kirp</button>
+        </div>
         <p class="angle-label">Goruntu Dondurme</p>
         <div class="rotate-options">
           <label for="rotateAngle" class="angle-label">Aci</label>
