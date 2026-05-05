@@ -14,6 +14,25 @@ const angleVal = document.getElementById("angleVal");
 const startCropBtn = document.getElementById("startCropBtn");
 const applySelectionCropBtn = document.getElementById("applySelectionCropBtn");
 
+// Yeni kontroller
+const resizeScale = document.getElementById("resizeScale");
+const scaleVal = document.getElementById("scaleVal");
+const applyResizeBtn = document.getElementById("applyResizeBtn");
+const fileInput2 = document.getElementById("fileInput2");
+const secondImageName = document.getElementById("secondImageName");
+const applyAddBtn = document.getElementById("applyAddBtn");
+const applyDivideBtn = document.getElementById("applyDivideBtn");
+const histogramSection = document.getElementById("histogramSection");
+const histogramOriginalCanvas = document.getElementById("histogramOriginal");
+const histogramStretchedCanvas = document.getElementById("histogramStretched");
+
+// Kontrast ve Mean Filtre kontrolleri
+const contrastFactor = document.getElementById("contrastFactor");
+const contrastVal = document.getElementById("contrastVal");
+const applyContrastBtn = document.getElementById("applyContrastBtn");
+const meanKernelSize = document.getElementById("meanKernelSize");
+const applyMeanBtn = document.getElementById("applyMeanBtn");
+
 const workCanvas = document.createElement("canvas");
 const workCtx = workCanvas.getContext("2d");
 let originalImageDataUrl = "";
@@ -22,6 +41,9 @@ let cropStartX = 0;
 let cropStartY = 0;
 let selectedCropRect = null;
 let cropModeEnabled = false;
+
+// İkinci görsel için
+let secondImageDataUrl = "";
 
 function isAllowedImage(file) {
   const allowedTypes = ["image/jpeg", "image/png"];
@@ -47,6 +69,17 @@ function imageDataToDataUrl(imageData) {
   return workCanvas.toDataURL("image/png");
 }
 
+function dataUrlToImageData(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    workCanvas.width = img.width;
+    workCanvas.height = img.height;
+    workCtx.drawImage(img, 0, 0);
+    callback(workCtx.getImageData(0, 0, img.width, img.height));
+  };
+  img.src = dataUrl;
+}
+
 function setCropMode(enabled) {
   cropModeEnabled = enabled;
   if (applySelectionCropBtn) {
@@ -54,6 +87,7 @@ function setCropMode(enabled) {
   }
   if (imageViewport) {
     imageViewport.classList.toggle("crop-mode", enabled);
+    imageViewport.style.cursor = enabled ? "crosshair" : "grab";
   }
 }
 
@@ -78,12 +112,29 @@ function applySelectedOperations() {
     workCtx.drawImage(image, 0, 0);
     let current = workCtx.getImageData(0, 0, image.width, image.height);
 
+    // Histogram gösterilecek mi kontrol
+    const showHistogram = selectedOps.includes("histogramStretch");
+
+    // Histogram germe öncesi orijinal histogramı hesapla
+    let originalHist = null;
+    if (showHistogram) {
+      originalHist = operationRegistry.computeHistogram(current);
+    }
+
     selectedOps.forEach((op) => {
       const operation = operationRegistry[op];
       if (operation) {
         current = operation(current);
       }
     });
+
+    // Histogram germe sonrası histogram
+    if (showHistogram) {
+      const stretchedHist = operationRegistry.computeHistogram(current);
+      histogramSection.style.display = "block";
+      operationRegistry.drawHistogram(originalHist, histogramOriginalCanvas, "#ef4444");
+      operationRegistry.drawHistogram(stretchedHist, histogramStretchedCanvas, "#22c55e");
+    }
 
     previewImage.src = imageDataToDataUrl(current);
     setMessage("");
@@ -105,6 +156,25 @@ function clearSelectedOperations() {
   }
   if (angleVal) {
     angleVal.textContent = "0°";
+  }
+  if (resizeScale) {
+    resizeScale.value = "100";
+  }
+  if (scaleVal) {
+    scaleVal.textContent = "1.00x";
+  }
+  if (contrastFactor) {
+    contrastFactor.value = "100";
+  }
+  if (contrastVal) {
+    contrastVal.textContent = "1.00";
+  }
+  if (meanKernelSize) {
+    meanKernelSize.value = "3";
+  }
+  // Histogram gizle
+  if (histogramSection) {
+    histogramSection.style.display = "none";
   }
   if (originalImageDataUrl) {
     previewImage.src = originalImageDataUrl;
@@ -128,7 +198,16 @@ function handleFile(file) {
     if (angleVal) {
       angleVal.textContent = "0°";
     }
+    if (resizeScale) {
+      resizeScale.value = "100";
+    }
+    if (scaleVal) {
+      scaleVal.textContent = "1.00x";
+    }
     setCropMode(false);
+    if (histogramSection) {
+      histogramSection.style.display = "none";
+    }
   });
 }
 
@@ -211,6 +290,149 @@ function updateCropSelectionRect(x1, y1, x2, y2) {
   cropSelection.style.display = width > 1 && height > 1 ? "block" : "none";
 }
 
+// ====== RESIZE (Yaklaştırma/Uzaklaştırma) ======
+function applyResizeFromCurrent() {
+  if (!previewImage.src) {
+    setMessage("Lutfen once bir gorsel yukleyin.");
+    return;
+  }
+  const scale = parseFloat(resizeScale.value) / 100.0;
+  const resizeOperation = operationRegistry.resize;
+  if (!resizeOperation) return;
+
+  const image = new Image();
+  image.onload = () => {
+    const targetW = Math.round(image.width * scale);
+    const targetH = Math.round(image.height * scale);
+
+    if (targetW > 8000 || targetH > 8000) {
+      setMessage(`Hata: Gorsel cok buyuk olacak (${targetW}x${targetH}). Tarayici cokuşunu onlemek icin islem iptal edildi.`);
+      return;
+    }
+
+    workCanvas.width = image.width;
+    workCanvas.height = image.height;
+    workCtx.drawImage(image, 0, 0);
+    const currentData = workCtx.getImageData(0, 0, image.width, image.height);
+    const resized = resizeOperation(currentData, scale);
+    previewImage.src = imageDataToDataUrl(resized);
+    setMessage(`Boyut: ${resized.width}x${resized.height} (${scale.toFixed(2)}x)`);
+    
+    // Resmin ortasına kaydır
+    if (imageViewport) {
+      setTimeout(() => {
+        imageViewport.scrollLeft = (imageViewport.scrollWidth - imageViewport.clientWidth) / 2;
+        imageViewport.scrollTop = (imageViewport.scrollHeight - imageViewport.clientHeight) / 2;
+      }, 50);
+    }
+  };
+  image.src = previewImage.src;
+}
+
+// ====== KONTRAST ARTIRMA ======
+function applyContrastFromCurrent() {
+  if (!previewImage.src) {
+    setMessage("Lutfen once bir gorsel yukleyin.");
+    return;
+  }
+  const factor = parseFloat(contrastFactor.value) / 100.0;
+  const contrastOp = operationRegistry.contrast;
+  if (!contrastOp) return;
+
+  const image = new Image();
+  image.onload = () => {
+    workCanvas.width = image.width;
+    workCanvas.height = image.height;
+    workCtx.drawImage(image, 0, 0);
+    const currentData = workCtx.getImageData(0, 0, image.width, image.height);
+    const result = contrastOp(currentData, factor);
+    previewImage.src = imageDataToDataUrl(result);
+    setMessage(`Kontrast faktor: ${factor.toFixed(2)}`);
+  };
+  image.src = previewImage.src;
+}
+
+// ====== MEAN FİLTRE ======
+function applyMeanFromCurrent() {
+  if (!previewImage.src) {
+    setMessage("Lutfen once bir gorsel yukleyin.");
+    return;
+  }
+  const ksize = parseInt(meanKernelSize.value) || 3;
+  const meanOp = operationRegistry.meanFilter;
+  if (!meanOp) return;
+
+  const image = new Image();
+  image.onload = () => {
+    workCanvas.width = image.width;
+    workCanvas.height = image.height;
+    workCtx.drawImage(image, 0, 0);
+    const currentData = workCtx.getImageData(0, 0, image.width, image.height);
+    const result = meanOp(currentData, ksize);
+    previewImage.src = imageDataToDataUrl(result);
+    setMessage(`Mean filtre uygulandi (${ksize}x${ksize})`);
+  };
+  image.src = previewImage.src;
+}
+
+// ====== ARİTMETİK İŞLEMLER ======
+function handleSecondFile(file) {
+  if (!file) return;
+  if (!isAllowedImage(file)) {
+    setMessage("Ikinci gorsel icin sadece JPG veya PNG dosyasi yukleyebilirsiniz.");
+    return;
+  }
+  readAsDataUrl(file, (dataUrl) => {
+    secondImageDataUrl = dataUrl;
+    if (secondImageName) {
+      secondImageName.textContent = "2. gorsel yuklendi: " + file.name;
+    }
+  });
+}
+
+function applyArithmeticOp(opName) {
+  if (!previewImage.src) {
+    setMessage("Lutfen birinci gorseli yukleyin.");
+    return;
+  }
+  if (!secondImageDataUrl) {
+    setMessage("Lutfen ikinci gorseli yukleyin.");
+    return;
+  }
+
+  const operation = operationRegistry[opName];
+  if (!operation) return;
+
+  // Birinci görseli ImageData'ya çevir
+  const img1 = new Image();
+  img1.onload = () => {
+    workCanvas.width = img1.width;
+    workCanvas.height = img1.height;
+    workCtx.drawImage(img1, 0, 0);
+    const data1 = workCtx.getImageData(0, 0, img1.width, img1.height);
+
+    // İkinci görseli ImageData'ya çevir
+    const img2 = new Image();
+    img2.onload = () => {
+      const tempCanvas = document.createElement("canvas");
+      const tempCtx = tempCanvas.getContext("2d");
+      tempCanvas.width = img2.width;
+      tempCanvas.height = img2.height;
+      tempCtx.drawImage(img2, 0, 0);
+      const data2 = tempCtx.getImageData(0, 0, img2.width, img2.height);
+
+      const result = operation(data1, data2);
+      previewImage.src = imageDataToDataUrl(result);
+      setMessage("");
+    };
+    img2.src = secondImageDataUrl;
+  };
+  img1.src = previewImage.src;
+}
+
+
+// ====== EVENT LISTENERS ======
+
 fileInput.addEventListener("change", (e) => {
   handleFile(e.target.files[0]);
 });
@@ -234,6 +456,7 @@ removeImageBtn.addEventListener("click", () => {
   previewImage.src = "";
   fileInput.value = "";
   originalImageDataUrl = "";
+  secondImageDataUrl = "";
   selectedCropRect = null;
   cropSelection.style.display = "none";
   setCropMode(false);
@@ -242,6 +465,21 @@ removeImageBtn.addEventListener("click", () => {
   }
   if (angleVal) {
     angleVal.textContent = "0°";
+  }
+  if (resizeScale) {
+    resizeScale.value = "100";
+  }
+  if (scaleVal) {
+    scaleVal.textContent = "1.00x";
+  }
+  if (histogramSection) {
+    histogramSection.style.display = "none";
+  }
+  if (secondImageName) {
+    secondImageName.textContent = "";
+  }
+  if (fileInput2) {
+    fileInput2.value = "";
   }
   setMessage("");
 });
@@ -271,6 +509,50 @@ if (rotateAngle && angleVal) {
   });
 }
 
+// Resize slider
+if (resizeScale && scaleVal) {
+  resizeScale.addEventListener("input", () => {
+    const s = (parseFloat(resizeScale.value) / 100.0).toFixed(2);
+    scaleVal.textContent = `${s}x`;
+  });
+}
+
+if (applyResizeBtn) {
+  applyResizeBtn.addEventListener("click", applyResizeFromCurrent);
+}
+
+// İkinci görsel yükleme
+if (fileInput2) {
+  fileInput2.addEventListener("change", (e) => {
+    handleSecondFile(e.target.files[0]);
+  });
+}
+
+// Aritmetik işlem butonları
+if (applyAddBtn) {
+  applyAddBtn.addEventListener("click", () => applyArithmeticOp("addImages"));
+}
+if (applyDivideBtn) {
+  applyDivideBtn.addEventListener("click", () => applyArithmeticOp("divideImages"));
+}
+
+// Kontrast slider
+if (contrastFactor && contrastVal) {
+  contrastFactor.addEventListener("input", () => {
+    const f = (parseFloat(contrastFactor.value) / 100.0).toFixed(2);
+    contrastVal.textContent = f;
+  });
+}
+
+if (applyContrastBtn) {
+  applyContrastBtn.addEventListener("click", applyContrastFromCurrent);
+}
+
+// Mean filtre butonu
+if (applyMeanBtn) {
+  applyMeanBtn.addEventListener("click", applyMeanFromCurrent);
+}
+
 if (imageViewport && cropSelection) {
   imageViewport.addEventListener("mousedown", (event) => {
     if (!previewImage.src || !cropModeEnabled) return;
@@ -289,6 +571,47 @@ if (imageViewport && cropSelection) {
 
   window.addEventListener("mouseup", () => {
     isSelectingCrop = false;
+  });
+}
+
+// ====== DRAG TO SCROLL (SÜRÜKLE KAYDIR) ======
+let isPanning = false;
+let startX, startY, scrollLeft, scrollTop;
+
+if (imageViewport) {
+  imageViewport.addEventListener("mousedown", (e) => {
+    if (cropModeEnabled || !previewImage.src) return;
+    isPanning = true;
+    imageViewport.style.cursor = "grabbing";
+    startX = e.pageX - imageViewport.offsetLeft;
+    startY = e.pageY - imageViewport.offsetTop;
+    scrollLeft = imageViewport.scrollLeft;
+    scrollTop = imageViewport.scrollTop;
+  });
+
+  imageViewport.addEventListener("mouseleave", () => {
+    isPanning = false;
+    if (imageViewport) {
+      imageViewport.style.cursor = cropModeEnabled ? "crosshair" : "grab";
+    }
+  });
+
+  window.addEventListener("mouseup", () => {
+    isPanning = false;
+    if (imageViewport) {
+      imageViewport.style.cursor = cropModeEnabled ? "crosshair" : "grab";
+    }
+  });
+
+  imageViewport.addEventListener("mousemove", (e) => {
+    if (!isPanning || cropModeEnabled) return;
+    e.preventDefault();
+    const x = e.pageX - imageViewport.offsetLeft;
+    const y = e.pageY - imageViewport.offsetTop;
+    const walkX = (x - startX); // Scroll hızı
+    const walkY = (y - startY);
+    imageViewport.scrollLeft = scrollLeft - walkX;
+    imageViewport.scrollTop = scrollTop - walkY;
   });
 }
 

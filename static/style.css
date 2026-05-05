@@ -47,12 +47,18 @@ body {
   border-radius: 8px;
   padding: 12px;
   background: #fff;
+  min-width: 0;
 }
 
 .image-viewport {
   position: relative;
-  display: inline-block;
+  display: block;
   width: 100%;
+  max-height: 600px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  border-radius: 6px;
 }
 
 .image-viewport.crop-mode {
@@ -61,13 +67,7 @@ body {
 
 .image-panel img {
   display: block;
-  width: 100%;
-  max-width: 100%;
-  max-height: 520px;
-  object-fit: contain;
-  border: 1px solid #ddd;
-  background: #fafafa;
-  border-radius: 6px;
+  margin: 0 auto;
 }
 
 .crop-selection {
@@ -174,6 +174,87 @@ button:disabled {
   width: 160px;
 }
 
+/* ====== YENİ STİLLER ====== */
+
+/* Bölüm başlıkları */
+.section-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #333;
+  margin: 14px 0 4px 0;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+/* Boyutlandırma slider */
+.resize-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 8px 0;
+  flex-wrap: wrap;
+  padding: 8px;
+  border: 1px solid #ececec;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+#resizeScale {
+  width: 160px;
+}
+
+#contrastFactor {
+  width: 160px;
+}
+
+/* Kernel boyutu seçici */
+.kernel-select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Histogram alanı */
+.histogram-section {
+  margin-top: 16px;
+}
+
+.histogram-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.histogram-box {
+  flex: 1;
+  min-width: 200px;
+}
+
+.histogram-box h4 {
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  color: #444;
+}
+
+.histogram-box canvas {
+  width: 100%;
+  height: 160px;
+  border-radius: 6px;
+  background: #1e1e2e;
+}
+
+/* İkinci görsel yükleme */
+.second-image-upload {
+  padding: 8px;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #fafafa;
+}
+
 @media (max-width: 900px) {
   .container {
     margin: 0;
@@ -185,4 +266,7 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .histogram-row {
+    flex-direction: column;
+  }
 }

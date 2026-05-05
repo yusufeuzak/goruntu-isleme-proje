@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Goruntu Isleme Projesi</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=4" />
 </head>
 <body>
   <div class="container">
@@ -25,6 +25,20 @@
         </div>
         <div class="image-actions">
           <button id="removeImageBtn" type="button">Gorseli Kaldir</button>
+        </div>
+
+        <!-- Histogram Canvas Alanları -->
+        <div id="histogramSection" class="histogram-section" style="display:none;">
+          <div class="histogram-row">
+            <div class="histogram-box">
+              <h4>Orijinal Histogram</h4>
+              <canvas id="histogramOriginal" width="512" height="200"></canvas>
+            </div>
+            <div class="histogram-box">
+              <h4>Germe Sonrasi Histogram</h4>
+              <canvas id="histogramStretched" width="512" height="200"></canvas>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -49,6 +63,69 @@
           <label for="rotateAngle" class="angle-label">Aci</label>
           <input type="range" id="rotateAngle" min="0" max="360" value="0" />
           <span id="angleVal">0°</span>
+        </div>
+
+        <!-- ====== YENİ İŞLEMLER ====== -->
+
+        <!-- 5. Görüntü Yaklaştırma/Uzaklaştırma -->
+        <p class="section-title">Goruntu Yaklastirma / Uzaklastirma</p>
+        <div class="resize-options">
+          <label for="resizeScale" class="angle-label">Olcek</label>
+          <input type="range" id="resizeScale" min="25" max="400" value="100" step="5" />
+          <span id="scaleVal">1.00x</span>
+        </div>
+        <div class="crop-actions">
+          <button id="applyResizeBtn" type="button">Boyutlandir</button>
+        </div>
+
+        <!-- 6. Renk Uzayı Dönüşümleri -->
+        <label class="op-item">
+          <input type="checkbox" class="op-checkbox" value="rgbToHsv" />
+          <span>Renk Uzayi Donusumu (RGB → HSV)</span>
+        </label>
+
+        <!-- 7. Histogram Germe -->
+        <label class="op-item">
+          <input type="checkbox" class="op-checkbox" value="histogramStretch" />
+          <span>Histogram Germe / Genisletme</span>
+        </label>
+        <p class="crop-help">Histogram gorsellerini gorselin altinda gorebilirsiniz.</p>
+
+        <!-- 8. Aritmetik İşlemler -->
+        <p class="section-title">Aritmetik Islemler (Ekleme / Bolme)</p>
+        <p class="crop-help">Islem icin ikinci bir gorsel yukleyin.</p>
+        <div class="second-image-upload">
+          <input id="fileInput2" class="file-input" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
+          <p id="secondImageName" class="crop-help" style="margin-top:4px;"></p>
+        </div>
+        <div class="crop-actions">
+          <button id="applyAddBtn" type="button">Gorsel Toplama</button>
+          <button id="applyDivideBtn" type="button">Gorsel Bolme</button>
+        </div>
+
+        <!-- 9. Kontrast Artırma -->
+        <p class="section-title">Kontrast Artirma</p>
+        <div class="resize-options">
+          <label for="contrastFactor" class="angle-label">Faktor</label>
+          <input type="range" id="contrastFactor" min="10" max="300" value="100" step="5" />
+          <span id="contrastVal">1.00</span>
+        </div>
+        <div class="crop-actions">
+          <button id="applyContrastBtn" type="button">Kontrast Uygula</button>
+        </div>
+
+        <!-- 10. Konvolüsyon İşlemi (Mean) -->
+        <p class="section-title">Konvolusyon Islemi (Mean Filtre)</p>
+        <div class="resize-options">
+          <label for="meanKernelSize" class="angle-label">Cekirdek Boyutu</label>
+          <select id="meanKernelSize" class="kernel-select">
+            <option value="3">3x3</option>
+            <option value="5">5x5</option>
+            <option value="7">7x7</option>
+          </select>
+        </div>
+        <div class="crop-actions">
+          <button id="applyMeanBtn" type="button">Mean Filtre Uygula</button>
         </div>
 
         <div class="op-actions">
