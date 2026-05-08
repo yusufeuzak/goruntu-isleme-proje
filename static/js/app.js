@@ -33,6 +33,25 @@ const applyContrastBtn = document.getElementById("applyContrastBtn");
 const meanKernelSize = document.getElementById("meanKernelSize");
 const applyMeanBtn = document.getElementById("applyMeanBtn");
 
+// Yeni eklenen kontroller (5 yeni islem)
+const thresholdValue = document.getElementById("thresholdValue");
+const thresholdVal = document.getElementById("thresholdVal");
+const applyThresholdBtn = document.getElementById("applyThresholdBtn");
+const applyPrewittBtn = document.getElementById("applyPrewittBtn");
+const noiseAmount = document.getElementById("noiseAmount");
+const noiseAmountVal = document.getElementById("noiseAmountVal");
+const medianKernelSize = document.getElementById("medianKernelSize");
+const applyNoiseBtn = document.getElementById("applyNoiseBtn");
+const applyMedianBtn = document.getElementById("applyMedianBtn");
+const unsharpAmount = document.getElementById("unsharpAmount");
+const unsharpAmountVal = document.getElementById("unsharpAmountVal");
+const applyUnsharpBtn = document.getElementById("applyUnsharpBtn");
+const morphKernelSize = document.getElementById("morphKernelSize");
+const applyErodeBtn = document.getElementById("applyErodeBtn");
+const applyDilateBtn = document.getElementById("applyDilateBtn");
+const applyOpeningBtn = document.getElementById("applyOpeningBtn");
+const applyClosingBtn = document.getElementById("applyClosingBtn");
+
 const workCanvas = document.createElement("canvas");
 const workCtx = workCanvas.getContext("2d");
 let originalImageDataUrl = "";
@@ -375,6 +394,63 @@ function applyMeanFromCurrent() {
   image.src = previewImage.src;
 }
 
+// ====== ORTAK YARDIMCI: tek-islem-uygula ======
+function applyOpToCurrent(opName, args = [], successMessage = "") {
+  if (!previewImage.src) {
+    setMessage("Lutfen once bir gorsel yukleyin.");
+    return;
+  }
+  const operation = operationRegistry[opName];
+  if (!operation) return;
+
+  const image = new Image();
+  image.onload = () => {
+    workCanvas.width = image.width;
+    workCanvas.height = image.height;
+    workCtx.drawImage(image, 0, 0);
+    const currentData = workCtx.getImageData(0, 0, image.width, image.height);
+    const result = operation(currentData, ...args);
+    previewImage.src = imageDataToDataUrl(result);
+    setMessage(successMessage);
+  };
+  image.src = previewImage.src;
+}
+
+// ====== TEK ESIKLEME (Ayarlanabilir) ======
+function applyThresholdFromCurrent() {
+  const t = parseInt(thresholdValue.value) || 128;
+  applyOpToCurrent("binary", [t], `Esik degeri: ${t}`);
+}
+
+// ====== PREWITT KENAR BULMA ======
+function applyPrewittFromCurrent() {
+  applyOpToCurrent("prewitt", [], "Prewitt kenar bulma uygulandi.");
+}
+
+// ====== SALT & PEPPER GURULTU ======
+function applyNoiseFromCurrent() {
+  const amount = (parseInt(noiseAmount.value) || 5) / 100.0;
+  applyOpToCurrent("saltPepper", [amount], `Salt&Pepper gurultu eklendi (%${(amount * 100).toFixed(0)}).`);
+}
+
+// ====== MEDIAN FILTRE ======
+function applyMedianFromCurrent() {
+  const ksize = parseInt(medianKernelSize.value) || 3;
+  applyOpToCurrent("medianFilter", [ksize], `Median filtre uygulandi (${ksize}x${ksize}).`);
+}
+
+// ====== UNSHARP MASK ======
+function applyUnsharpFromCurrent() {
+  const amount = (parseInt(unsharpAmount.value) || 100) / 100.0;
+  applyOpToCurrent("unsharp", [amount], `Unsharp uygulandi (miktar: ${amount.toFixed(2)}).`);
+}
+
+// ====== MORFOLOJIK ISLEMLER ======
+function applyMorphFromCurrent(opName, label) {
+  const ksize = parseInt(morphKernelSize.value) || 3;
+  applyOpToCurrent(opName, [ksize], `${label} uygulandi (${ksize}x${ksize}).`);
+}
+
 // ====== ARİTMETİK İŞLEMLER ======
 function handleSecondFile(file) {
   if (!file) return;
@@ -551,6 +627,59 @@ if (applyContrastBtn) {
 // Mean filtre butonu
 if (applyMeanBtn) {
   applyMeanBtn.addEventListener("click", applyMeanFromCurrent);
+}
+
+// Tek esikleme slider + buton
+if (thresholdValue && thresholdVal) {
+  thresholdValue.addEventListener("input", () => {
+    thresholdVal.textContent = thresholdValue.value;
+  });
+}
+if (applyThresholdBtn) {
+  applyThresholdBtn.addEventListener("click", applyThresholdFromCurrent);
+}
+
+// Prewitt buton
+if (applyPrewittBtn) {
+  applyPrewittBtn.addEventListener("click", applyPrewittFromCurrent);
+}
+
+// Salt & Pepper slider + butonlar
+if (noiseAmount && noiseAmountVal) {
+  noiseAmount.addEventListener("input", () => {
+    noiseAmountVal.textContent = `%${noiseAmount.value}`;
+  });
+}
+if (applyNoiseBtn) {
+  applyNoiseBtn.addEventListener("click", applyNoiseFromCurrent);
+}
+if (applyMedianBtn) {
+  applyMedianBtn.addEventListener("click", applyMedianFromCurrent);
+}
+
+// Unsharp slider + buton
+if (unsharpAmount && unsharpAmountVal) {
+  unsharpAmount.addEventListener("input", () => {
+    const v = (parseInt(unsharpAmount.value) / 100.0).toFixed(2);
+    unsharpAmountVal.textContent = v;
+  });
+}
+if (applyUnsharpBtn) {
+  applyUnsharpBtn.addEventListener("click", applyUnsharpFromCurrent);
+}
+
+// Morfolojik islemler
+if (applyErodeBtn) {
+  applyErodeBtn.addEventListener("click", () => applyMorphFromCurrent("erode", "Asinma"));
+}
+if (applyDilateBtn) {
+  applyDilateBtn.addEventListener("click", () => applyMorphFromCurrent("dilate", "Genisleme"));
+}
+if (applyOpeningBtn) {
+  applyOpeningBtn.addEventListener("click", () => applyMorphFromCurrent("opening", "Acma"));
+}
+if (applyClosingBtn) {
+  applyClosingBtn.addEventListener("click", () => applyMorphFromCurrent("closing", "Kapama"));
 }
 
 if (imageViewport && cropSelection) {

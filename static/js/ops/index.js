@@ -8,6 +8,11 @@ import { applyHistogramStretch, computeHistogram, drawHistogram } from "./histog
 import { applyAdd, applyDivide } from "./arithmetic.js";
 import { applyContrast } from "./contrast.js";
 import { applyMeanFilter } from "./convolution.js";
+import { applyPrewitt } from "./edge.js";
+import { applySaltPepperNoise } from "./noise.js";
+import { applyMedianFilter } from "./median.js";
+import { applyUnsharpMask } from "./unsharp.js";
+import { applyErode, applyDilate, applyOpening, applyClosing } from "./morphology.js";
 
 export const operationRegistry = {
   grayscale: applyGrayscale,
@@ -23,4 +28,12 @@ export const operationRegistry = {
   divideImages: applyDivide,
   contrast: applyContrast,
   meanFilter: applyMeanFilter,
+  prewitt: applyPrewitt,
+  saltPepper: applySaltPepperNoise,
+  medianFilter: applyMedianFilter,
+  unsharp: applyUnsharpMask,
+  erode: applyErode,
+  dilate: applyDilate,
+  opening: applyOpening,
+  closing: applyClosing,
 };
