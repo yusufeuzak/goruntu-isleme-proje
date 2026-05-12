@@ -150,15 +150,23 @@
             Aritmetik Islemler
           </summary>
           <div class="op-group-body">
-            <p class="hint">Toplama / bolme islemi icin ikinci bir gorsel yukleyin.</p>
+            <p class="field-label">Toplama (iki gorsel)</p>
+            <p class="hint">Toplama islemi icin ikinci bir gorsel yukleyin.</p>
             <div class="second-image-upload">
               <label for="fileInput2" class="file-label-sm">Ikinci Gorseli Sec</label>
               <input id="fileInput2" class="file-input" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />
               <p id="secondImageName" class="hint hint-success"></p>
             </div>
-            <div class="btn-row">
-              <button id="applyAddBtn" type="button" class="btn-secondary">Toplama</button>
-              <button id="applyDivideBtn" type="button" class="btn-secondary">Bolme</button>
+            <button id="applyAddBtn" type="button" class="btn-secondary btn-block">Toplama</button>
+
+            <p class="field-label" style="margin-top:1rem">Bolme (sayi ile)</p>
+            <div class="slider-block">
+              <div class="slider-row">
+                <label for="divideScalar">Bolen</label>
+                <span id="divideScalarVal" class="slider-value">2</span>
+              </div>
+              <input type="range" id="divideScalar" min="1" max="10" value="2" step="1" class="slider" />
+              <button id="applyDivideBtn" type="button" class="btn-secondary btn-block">Bolme</button>
             </div>
           </div>
         </details>

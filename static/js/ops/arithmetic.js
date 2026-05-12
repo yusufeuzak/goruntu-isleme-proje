@@ -1,5 +1,5 @@
 /**
- * İki resim arasında aritmetik işlemler (Ekleme, Bölme)
+ * Aritmetik işlemler: toplama (iki görsel), bölme (sabit sayı ile)
  * Hazır fonksiyon kullanılmaz — piksel seviyesinde döngülerle yapılır.
  */
 
@@ -61,34 +61,23 @@ export function applyAdd(imageData1, imageData2) {
 }
 
 /**
- * İki görsel bölme: result = min(255, (img1 / img2) * 255)
- * Bölen 0 ise sonuç 255 olur.
- * Boyutlar farklıysa img2, img1 boyutuna getirilir.
+ * Sabit sayı ile bölme: result[ch] = clamp(round(pixel[ch] / scalar), 0, 255)
+ * Bölen < 1 olamaz; karartma efekti üretir (scalar=2 yarı parlaklık).
  */
-export function applyDivide(imageData1, imageData2) {
-  const w = imageData1.width;
-  const h = imageData1.height;
-  const src1 = imageData1.data;
+export function applyDivideByScalar(imageData, scalar) {
+  const w = imageData.width;
+  const h = imageData.height;
+  const src = imageData.data;
 
-  // İkinci görseli aynı boyuta getir
-  let matched = imageData2;
-  if (imageData2.width !== w || imageData2.height !== h) {
-    matched = resizeToMatch(imageData2, w, h);
-  }
-  const src2 = matched.data;
+  const divisor = Math.max(1, Number(scalar) || 1);
 
   const out = new ImageData(w, h);
 
-  for (let i = 0; i < src1.length; i += 4) {
-    for (let ch = 0; ch < 3; ch++) {
-      const denom = src2[i + ch];
-      if (denom === 0) {
-        out.data[i + ch] = 255;
-      } else {
-        out.data[i + ch] = Math.min(255, Math.round((src1[i + ch] / denom) * 255));
-      }
-    }
-    out.data[i + 3] = 255; // A
+  for (let i = 0; i < src.length; i += 4) {
+    out.data[i]     = Math.min(255, Math.max(0, Math.round(src[i]     / divisor))); // R
+    out.data[i + 1] = Math.min(255, Math.max(0, Math.round(src[i + 1] / divisor))); // G
+    out.data[i + 2] = Math.min(255, Math.max(0, Math.round(src[i + 2] / divisor))); // B
+    out.data[i + 3] = 255;                                                          // A
   }
 
   return out;

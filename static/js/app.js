@@ -22,6 +22,8 @@ const fileInput2 = document.getElementById("fileInput2");
 const secondImageName = document.getElementById("secondImageName");
 const applyAddBtn = document.getElementById("applyAddBtn");
 const applyDivideBtn = document.getElementById("applyDivideBtn");
+const divideScalar = document.getElementById("divideScalar");
+const divideScalarVal = document.getElementById("divideScalarVal");
 const histogramSection = document.getElementById("histogramSection");
 const histogramOriginalCanvas = document.getElementById("histogramOriginal");
 const histogramStretchedCanvas = document.getElementById("histogramStretched");
@@ -608,8 +610,16 @@ if (fileInput2) {
 if (applyAddBtn) {
   applyAddBtn.addEventListener("click", () => applyArithmeticOp("addImages"));
 }
+if (divideScalar && divideScalarVal) {
+  divideScalar.addEventListener("input", () => {
+    divideScalarVal.textContent = divideScalar.value;
+  });
+}
 if (applyDivideBtn) {
-  applyDivideBtn.addEventListener("click", () => applyArithmeticOp("divideImages"));
+  applyDivideBtn.addEventListener("click", () => {
+    const s = parseFloat(divideScalar.value) || 2;
+    applyOpToCurrent("divideByScalar", [s], `Bolme uygulandi (bolen: ${s}).`);
+  });
 }
 
 // Kontrast slider

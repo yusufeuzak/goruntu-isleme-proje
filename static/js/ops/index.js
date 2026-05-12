@@ -5,7 +5,7 @@ import { applyCrop } from "./crop.js";
 import { applyResize } from "./resize.js";
 import { applyRgbToHsv } from "./colorspace.js";
 import { applyHistogramStretch, computeHistogram, drawHistogram } from "./histogram.js";
-import { applyAdd, applyDivide } from "./arithmetic.js";
+import { applyAdd, applyDivideByScalar } from "./arithmetic.js";
 import { applyContrast } from "./contrast.js";
 import { applyMeanFilter } from "./convolution.js";
 import { applyPrewitt } from "./edge.js";
@@ -25,7 +25,7 @@ export const operationRegistry = {
   computeHistogram: computeHistogram,
   drawHistogram: drawHistogram,
   addImages: applyAdd,
-  divideImages: applyDivide,
+  divideByScalar: applyDivideByScalar,
   contrast: applyContrast,
   meanFilter: applyMeanFilter,
   prewitt: applyPrewitt,
